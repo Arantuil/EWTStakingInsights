@@ -72,7 +72,7 @@ const Home = () => {
                         <div className='text-textprimary dark:text-darktextprimary transition-all px-4 py-2'>
                             <Header />
                             {blockchain.account === "" || blockchain.smartContract === null ? (
-                                <div className='p-4 md:px-6 lg:px-8 xl:px-12 text-darktextprimary'>
+                                <div className='p-2 sm:p-4 md:px-6 lg:px-8 xl:px-12 text-darktextprimary'>
                                     <div className='bg-[#ececec] dark:bg-[#161A21] mb-4 p-4 rounded-md'>
                                         <div>
                                             <div>
@@ -84,7 +84,7 @@ const Home = () => {
                                     </div>
                                 </div>
                             ) : (
-                                <div className='p-4 md:px-6 lg:px-8 xl:px-12 text-darktextprimary'>
+                                <div className='p-2 sm:p-4 md:px-6 lg:px-8 xl:px-12 text-darktextprimary'>
                                     <div className='bg-[#ececec] dark:bg-[#161A21] mb-4 p-4 rounded-md'>
                                         <div>
                                             <div>
