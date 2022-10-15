@@ -1,0 +1,19 @@
+{
+  "CONTRACT_ADDRESS": "0x5A547Ad0cE7140110aE945F00b7D8dF6f58257d7",
+  "STAKINGCONTRACT_ADDRESS": "Not deployed yet",
+  "SCAN_LINK": "https://explorer.energyweb.org/address/0x5A547Ad0cE7140110aE945F00b7D8dF6f58257d7",
+  "NETWORK": {
+    "NAME": "EWC",
+    "SYMBOL": "EWT",
+    "ID": 246
+  },
+  "NFT_NAME": "Tubby Turtles",
+  "SYMBOL": "TTT",
+  "MAX_SUPPLY": 2100,
+  "WEI_COST": 1500000000000000000,
+  "DISPLAY_COST": 1.5,
+  "GAS_LIMIT": 300000,
+  "MARKETPLACE": "",
+  "MARKETPLACE_LINK": "https://energywebnfts.com/nft/TubbyTurtles"
+}
+
