@@ -4,22 +4,26 @@ import { fetchData } from '../redux/data/dataActions';
 import Header from '../components/Header';
 import store from '../redux/store';
 import EWTlogo from '../assets/images/EWTlogo.png';
+import usdicon from '../assets/images/usdicon.png';
 import { connect } from '../redux/blockchain/blockchainActions';
 
 const Home = () => {
     const dispatch = useDispatch();
     const blockchain = useSelector((state) => state.blockchain);
     const data = useSelector((state) => state.data);
-    //const hexToDecimal = hex => parseInt(hex, 16);
+
     const getData = () => {
         if (blockchain.account !== "" && blockchain.smartContract !== null) {
             dispatch(fetchData(blockchain.account));
         }
     };
+    useEffect(() => {
+        getData();
+        if (blockchain.account !== "") {
+            dispatch(fetchData());
+        }
+    }, [blockchain.account, dispatch]);
 
-    window.addEventListener('load', function () {
-        startApp();
-    })
     async function startApp() {
         window.ethereum.sendAsync({
             method: "eth_accounts",
@@ -31,37 +35,60 @@ const Home = () => {
         });
     }
 
-    const [stakingInfo1, setStakinginfo1] = useState('')
-    const [stakingInfo2, setStakinginfo2] = useState('')
-    const [stakingInfo3, setStakinginfo3] = useState('')
+    window.addEventListener('load', function () {
+        startApp();
+    })
+
+    console.log(data)
+
+    const [stakingInfo1, setStakinginfo1] = useState(0)
+    const [stakingInfo2, setStakinginfo2] = useState(0)
+    const [stakingInfo3, setStakinginfo3] = useState(0)
 
     async function getStakingInfo() {
-        let stakingInfo = await store
+        try {
+            let stakingInfo = await store
             .getState()
             .blockchain.ewtStakingContract.methods.stakes(blockchain.account)
             .call();
-        setStakinginfo1(stakingInfo[0] / 1000000000000000000)
-        setStakinginfo2(stakingInfo[1] / 1000000000000000000)
-        setStakinginfo3(stakingInfo[3] / 1000000000000000000)
+            setStakinginfo1(stakingInfo[0] / 1000000000000000000)
+            setStakinginfo2(stakingInfo[1] / 1000000000000000000)
+            setStakinginfo3(stakingInfo[3] / 1000000000000000000)
+        } catch (error) {
+            return;
+        }
     }
 
+    const [ewtprice, setEwtprice] = useState(0);
+    async function getEwtprice() {
+        let httpobj = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=energy-web-token&vs_currencies=usd')
+        let ewtprice = await httpobj.json()
+        setEwtprice(ewtprice["energy-web-token"]["usd"])
+    }
     useEffect(() => {
-        getData();
-        getStakingInfo()
-    }, [blockchain.account, data]);
+        getEwtprice();
+    }, [])
 
-    //function toPlainString(num) { return ('' + +num).replace(/(-?)(\d*)\.?(\d*)e([+-]\d+)/, function (a, b, c, d, e) { return e < 0 ? b + '0.' + Array(1 - e - c.length).join(0) + c + d : b + c + d + Array(e - d.length + 1).join(0); }); };
+    const [seconds, setSeconds] = useState(0);
+    const [minutes, setMinutes] = useState(0);
+    const [hours, setHours] = useState(0);
+    const [days, setDays] = useState(0);
+    const [weeks, setWeeks] = useState(0);
+    const [months, setMonths] = useState(0);
 
-    // end unix time: 1671318000
+    setInterval(function() {
+        // end unix time: 1671318000
+        let currentUnixTimestamp = Math.floor(Date.now() / 1000)
+        setSeconds(1702650600 - currentUnixTimestamp)
+        setMinutes((1702650600 - currentUnixTimestamp) / 60)
+        setHours((1702650600 - currentUnixTimestamp) / 60 / 60)
+        setDays((1702650600 - currentUnixTimestamp) / 60 / 60 / 24)
+        setWeeks((1702650600 - currentUnixTimestamp) / 60 / 60 / 24 / 7)
+        setMonths((1702650600 - currentUnixTimestamp) / 60 / 60 / 24 / 7 / 4)
+        //console.log(remainingSeconds, remainingMinutes, remainingHours, remainingDays, remainingWeeks)
 
-    let currentUnixTimestamp = Math.floor(Date.now() / 1000)
-    let remainingSeconds = 1671318000 - currentUnixTimestamp
-    let remainingMinutes = (1671318000 - currentUnixTimestamp) / 60
-    let remainingHours = (1671318000 - currentUnixTimestamp) / 60 / 60
-    let remainingDays = (1671318000 - currentUnixTimestamp) / 60 / 60 / 24
-    let remainingWeeks = (1671318000 - currentUnixTimestamp) / 60 / 60 / 24 / 7
-
-    //console.log(remainingSeconds, remainingMinutes, remainingHours, remainingDays, remainingWeeks)
+        getStakingInfo();
+    }, 1000);
 
     return (
         <div className="w-full min-h-[100vh] flex justify-center align-start flex-col flex-nowrap bg-bgprimary dark:bg-darkbgprimary transition-all">
@@ -100,11 +127,10 @@ const Home = () => {
                                                 <div className='flex flex-col'>
                                                     <div className='flex flex-col'>
                                                         <div>
-                                                            <h1 className='font-bold flex flex-row text-lg sm:text-xl text-textprimary dark:text-darktextprimary transition-all'>Staking pool balance: {(parseInt(stakingInfo2)).toFixed(5)} <img className='ml-[6px] h-[26px] flex my-auto' src={EWTlogo} alt="" /></h1>
+                                                            <h1 className='font-bold flex flex-row text-lg sm:text-xl text-textprimary dark:text-darktextprimary transition-all'>Current staking balance (compounded): {(parseFloat(stakingInfo2)).toFixed(4)} <img className='ml-[6px] h-[26px] flex my-auto' src={EWTlogo} alt="" /></h1>
                                                             <div className='mt-3 flex flex-col text-textprimary dark:text-darktextprimary transition-all'>
-                                                                <p>Deposited EWT: {(parseFloat(stakingInfo1)).toFixed(2)}</p>
+                                                                <p>Deposited EWT: {(parseFloat(stakingInfo1)).toFixed(4)}</p>
                                                                 <p>Earned: {(parseFloat(stakingInfo2 - stakingInfo1)).toFixed(2)} EWT</p>
-                                                                <p>Current staking balance (compounded): {(parseFloat(stakingInfo2)).toFixed(5)}</p>
 
                                                                 <p className='mt-3'>Total staking rewards based on current deposited EWT amount: {(parseFloat(stakingInfo3)).toFixed(2)}</p>
                                                                 <p>Estimated EWT rewards left to earn: {(parseFloat(stakingInfo3 - (stakingInfo2 - stakingInfo1))).toFixed(2)}</p>
@@ -118,39 +144,52 @@ const Home = () => {
                                             <div className='bg-[#ececec] dark:bg-[#161A21] mt-4 p-4 rounded-md'>
                                                 <div>
                                                     <h1 className='font-bold flex flex-row text-lg sm:text-xl text-textprimary dark:text-darktextprimary transition-all'>Estimated EWT rewards left: {(parseFloat(stakingInfo3 - (stakingInfo2 - stakingInfo1))).toFixed(2)} <img className='ml-[6px] h-[26px] flex my-auto' src={EWTlogo} alt="" /></h1>
+                                                    <h1 className='font-bold flex flex-row text-lg sm:text-xl text-textprimary dark:text-darktextprimary transition-all'>${(parseFloat(stakingInfo3 - (stakingInfo2 - stakingInfo1))*ewtprice).toFixed(2)} <img className='ml-[6px] h-[26px] flex my-auto' src={usdicon} alt="" /></h1>
                                                     <table className="mt-3 table-auto text-textprimary dark:text-darktextprimary transition-all">
                                                         <thead>
                                                             <tr>
                                                                 <th className='pr-[8px]'>Timeframe</th>
-                                                                <th className='px-[8px]'>Amount</th>
+                                                                <th className='px-[8px]'>Amount EWT <img className='inline ml-[3px] mb-[2px] h-[16px] my-auto' src={EWTlogo} alt="" /></th>
+                                                                <th className='px-[8px]'>Amount USD <img className='inline ml-[3px] mb-[2px] h-[16px] my-auto' src={usdicon} alt="" /></th>
                                                                 <th className='px-[8px]'>Remaining time</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Second: </td>
-                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / remainingSeconds).toFixed(5)}</td>
-                                                                <td className='px-[8px]'>{remainingSeconds} Seconds</td>
+                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / seconds).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>${(((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / seconds)*ewtprice).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>{seconds} Seconds</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Minute: </td>
-                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / remainingMinutes).toFixed(5)}</td>
-                                                                <td className='px-[8px]'>{remainingMinutes.toFixed(0)} Minutes</td>
+                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / minutes).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>${(((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / minutes)*ewtprice).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>{minutes.toFixed(0)} Minutes</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Hour: </td>
-                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / remainingHours).toFixed(5)}</td>
-                                                                <td className='px-[8px]'>{remainingHours.toFixed(0)} Hours</td>
+                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / hours).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>${(((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / hours)*ewtprice).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>{hours.toFixed(0)} Hours</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Day: </td>
-                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / remainingDays).toFixed(5)}</td>
-                                                                <td className='px-[8px]'>{remainingDays.toFixed(2)} Days</td>
+                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / days).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>${(((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / days)*ewtprice).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>{days.toFixed(2)} Days</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Week: </td>
-                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / remainingWeeks).toFixed(5)}</td>
-                                                                <td className='px-[8px]'>{remainingWeeks.toFixed(2)} Weeks</td>
+                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / weeks).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>${(((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / weeks)*ewtprice).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>{weeks.toFixed(2)} Weeks</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className='pr-[8px]'>EWT/Month: </td>
+                                                                <td className='px-[8px]'>{((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / months).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>${(((stakingInfo3 - (stakingInfo2 - stakingInfo1)) / months)*ewtprice).toFixed(5)}</td>
+                                                                <td className='px-[8px]'>{months.toFixed(2)} Months</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>
@@ -190,27 +229,32 @@ const Home = () => {
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Second: </td>
                                                                 <td className='px-[8px]'>0</td>
-                                                                <td className='px-[8px]'>{remainingSeconds} Seconds</td>
+                                                                <td className='px-[8px]'>{seconds} Seconds</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Minute: </td>
                                                                 <td className='px-[8px]'>0</td>
-                                                                <td className='px-[8px]'>{remainingMinutes.toFixed(0)} Minutes</td>
+                                                                <td className='px-[8px]'>{minutes.toFixed(0)} Minutes</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Hour: </td>
                                                                 <td className='px-[8px]'>0</td>
-                                                                <td className='px-[8px]'>{remainingHours.toFixed(0)} Hours</td>
+                                                                <td className='px-[8px]'>{hours.toFixed(0)} Hours</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Day: </td>
                                                                 <td className='px-[8px]'>0</td>
-                                                                <td className='px-[8px]'>{remainingDays.toFixed(2)} Days</td>
+                                                                <td className='px-[8px]'>{days.toFixed(2)} Days</td>
                                                             </tr>
                                                             <tr>
                                                                 <td className='pr-[8px]'>EWT/Week: </td>
                                                                 <td className='px-[8px]'>0</td>
-                                                                <td className='px-[8px]'>{remainingWeeks.toFixed(2)} Weeks</td>
+                                                                <td className='px-[8px]'>{weeks.toFixed(2)} Weeks</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td className='pr-[8px]'>EWT/Month: </td>
+                                                                <td className='px-[8px]'>0</td>
+                                                                <td className='px-[8px]'>{months.toFixed(2)} Months</td>
                                                             </tr>
                                                         </tbody>
                                                     </table>

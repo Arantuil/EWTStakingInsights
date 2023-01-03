@@ -70,11 +70,11 @@ export const connect = () => {
         if (Number(networkId) === CONFIG.NETWORK.ID) {
           const SmartContractObj = new Web3EthContract(
             abi,
-            CONFIG.CONTRACT_ADDRESS
+            "0x5A547Ad0cE7140110aE945F00b7D8dF6f58257d7"
           );
           const ewtstakingContractObj = new Web3EthContract(
             ewtstakingAbi,
-            "0x181A8b2a5AEb25941F6A79b4aE43dBb1968c417A"
+            "0xA507B00463ce82DF6a105Ab05f810809fAedd538"
           );
           dispatch(
             connectSuccess({

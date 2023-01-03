@@ -12,7 +12,6 @@ import Toggle from './Toggle';
 const Header = () => {
     const dispatch = useDispatch();
     const blockchain = useSelector((state) => state.blockchain);
-    const data = useSelector((state) => state.data);
 
     const getData = () => {
         if (blockchain.account !== "" && blockchain.smartContract !== null) {
@@ -20,12 +19,8 @@ const Header = () => {
         }
     };
 
-    useEffect(() => {
-        getData();
-    }, [blockchain.account]);
-
     return (
-        <header className='z-5 w-full h-[70px] bg-bgprimary dark:bg-darkbgprimary transition-all flex items-center justify-between' >
+        <header className='z-5 w-full h-[66px] bg-bgprimary dark:bg-darkbgprimary transition-all flex items-center justify-between' >
             <div className='rounded-lg shadow-[0_0px_10px_3px_rgba(15,23,35,0.30)] dark:shadow-[0_0px_10px_3px_rgba(245,245,230,0.2)] w-full h-full
             bg-gradient-to-r from-[#9AEFA2] via-[#8DD7E4] to-[#C8A1FB] 
             dark:bg-gradient-to-r dark:from-[#368B3E] dark:via-[#297380] dark:to-[#643D97]
